@@ -3,7 +3,10 @@ import React from 'react';
 //DISPATCH
 import { useDispatch } from 'react-redux';
 //ACTIONS
-import { toggleComplete, deleteTodo } from '../redux/todoSlice';
+//WITHOUT API
+// import { toggleComplete, deleteTodo } from '../redux/todoSlice';
+//WITH API
+import { toggleCompleteAsync, deleteTodoAsync } from '../redux/todoSlice';
 
 const TodoItem = ({ id, title, completed }) => {
   const dispatch = useDispatch();
@@ -13,7 +16,10 @@ const TodoItem = ({ id, title, completed }) => {
   // we pass this in as our payload object
   const handleCompleteClick = () => {
     dispatch(
-      toggleComplete({
+      //wITHOUT API
+      // toggleComplete({
+      //WITH API
+      toggleCompleteAsync({
         // opposite of whater the completed value currently is -> toggle
         id: id,
         completed: !completed,
@@ -24,7 +30,10 @@ const TodoItem = ({ id, title, completed }) => {
   // reducer needs to know the id of the todo item
   const handleDeleteClick = () => {
     dispatch(
-      deleteTodo({
+      //wITHOUT API
+      // deleteTodo({
+      //WITH API
+      deleteTodoAsync({
         id: id,
       })
     );

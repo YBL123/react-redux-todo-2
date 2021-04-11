@@ -1,21 +1,81 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
+// THUNKS !!!!!!!!
 //a THUNK is a function which returns another function
 //this THUNK is a the new ACTION which we dispatch from our components
 // this will in turn will dispatch its own ACTION when the RESPONSE COMPLETES with the DATA from the API CALL AS THE PAYLOAD
 //so need to pass some stuff into the createThunk function
 // need to export THUNK here -> used bellow in extraReducers
-export const getTodosAsync = createAsyncThunk('todos/getTodosAsync', async () => {
-  const response = await fetch('http://localhost:7000/todos');
-  if (response.ok) {
-    const todos = await response.json();
-    // whenever this returns it will dispatch another action with the todos in the PAYLOAD
-    return { todos };
+export const getTodosAsync = createAsyncThunk(
+  'todos/getTodosAsync',
+  async () => {
+    const response = await fetch('http://localhost:7000/todos');
+    if (response.ok) {
+      const todos = await response.json();
+      // whenever this returns it will dispatch another action with the todos in the PAYLOAD
+      return { todos };
+    }
   }
-});
+);
+
+// this time we pass in the payload parameter as we need to know the title of the todo
+export const addTodoAsync = createAsyncThunk(
+  'todos/addTodoAsync',
+  async (payload) => {
+    const response = await fetch('http://localhost:7000/todos', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ title: payload.title }),
+    });
+    if (response.ok) {
+      // get the todo from response
+      const todo = await response.json();
+      // return this todo as a new object
+      return { todo };
+    }
+  }
+);
+
+export const toggleCompleteAsync = createAsyncThunk(
+  'todos/completeTodoAsync',
+  async (payload) => {
+    //updating exisitng todo -> need to pass id of todo we are updating
+    const response = await fetch(`http://localhost:7000/todos/${payload.id}`, {
+      //PATCH -> updating existing
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ completed: payload.completed }),
+    });
+
+    if (response.ok) {
+      //get updated todo object from response
+      const todo = await response.json();
+      // return object
+      return { id: todo.id, completed: todo.completed };
+    }
+  }
+);
+
+export const deleteTodoAsync = createAsyncThunk(
+  'todos/deleteTodoAsync',
+  async (payload) => {
+    const response = await fetch(`http://localhost:7000/todos/${payload.id}`, {
+      method: 'DELETE',
+    });
+
+    if (response.ok) {
+      return { id: payload.id };
+    }
+  }
+);
+
+// -----------------------------------
 
 //SLICE!!!
-
 const todoSlice = createSlice({
   name: 'todos',
   initialState: [
@@ -57,12 +117,27 @@ const todoSlice = createSlice({
   //specify additional reducers
   extraReducers: {
     [getTodosAsync.pending]: (state, action) => {
-      console.log('fetching data...')
+      console.log('fetching data...');
     },
     //when the THUNK dispatches a fullfiled action, this will mean that the API call in our THUNK has completed and dispatched this ACTION successfully
     [getTodosAsync.fulfilled]: (state, action) => {
-      console.log('fetched data successfully...')
+      console.log('fetched data successfully...');
       return action.payload.todos;
+    },
+    [addTodoAsync.fulfilled]: (state, action) => {
+      // takes the todo from payload and pushes into current state -> redux will update store and notify components that something has changed
+      state.push(action.payload.todo);
+    },
+    [toggleCompleteAsync.fulfilled]: (state, action) => {
+      //finding the index of the todo in the todos array based on the id
+      const index = state.findIndex((todo) => todo.id === action.payload.id);
+      //using index to get to todo in that position and update completed property to whatever
+      // value our component passes as part of the payload
+      // at this point redux will update the state -> selector will detect the change and rerender any components
+      state[index].completed = action.payload.completed;
+    },
+    [deleteTodoAsync.fulfilled]: (state, action) => {
+      return state.filter((todo) => todo.id !== action.payload.id);
     },
   },
 });

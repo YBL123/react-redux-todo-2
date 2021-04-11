@@ -3,7 +3,10 @@ import React, { useState } from 'react';
 //LETS US DISPATCH ACTIONS
 import { useDispatch } from 'react-redux';
 //ACTION
-import { addTodo } from '../redux/todoSlice';
+//without API
+// import { addTodo } from '../redux/todoSlice';
+//with API
+import { addTodoAsync } from '../redux/todoSlice';
 
 const AddTodoForm = () => {
   const [value, setValue] = useState('');
@@ -14,7 +17,8 @@ const AddTodoForm = () => {
     event.preventDefault();
     //adding a call to DISPATCH addTodo ACTION
     dispatch(
-      addTodo({
+      // addTodo({
+      addTodoAsync({
         //PAYLOD = TITLE
         title: value,
       })
